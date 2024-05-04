@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8 />
+	<title>Map Template Browser Title</title>
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: "whitesmoke";
+			font-family: "Noto Sans", sans-serif;
+			color: #3d3d3d;
+		}
+
+		h1 {
+			position: absolute;
+			margin-top: 0;
+			top: 10px;
+			left: 45px;
+			font-size: 2em;
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+			padding: 10px 15px;
+			background: rgba(256, 256, 256);
+			border: 1px solid grey;
+			border-radius: 3px;
+			z-index: 800;
+		}
+
+		h2 {
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		section {
+			position: absolute;
+			bottom: 0;
+			left: 10px;
+			width: 280px;
+			margin: 20px auto;
+			padding: 0 15px;
+			background: rgba(256, 256, 256);
+			border: 1px solid grey;
+			border-radius: 3px;
+			z-index: 800;
+		}
+
+		p {
+			font-size: .9em;
+			line-height: 1.5em;
+		}
+
+		a {
+			color: #005daa;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+
+        .legend {
+line-height: 40px;
+font-size: 16px;
+width: 190px;
+color: #333333;
+padding: 6px 8px;
+background: white;
+background: rgba(255,255,255,0.5);
+box-shadow: 0 0 15px rgba(0,0,0,0.2);
+border-radius: 5px;
+}
+.legend i {
+width: 20px;
+height: 20px;
+float: left;
+margin-right: 8px;
+opacity: 0.9;
+}
+.legend img {
+width: 45px;
+height: 45px;
+margin-right: 3px;
+float: left;
+}
+.legend p {
+font-size: 14px;
+line-height: 20px;
+margin: 0;
+float: left;
+}
+
+
+
+	</style>
+</head>
+
+<body>
+
+	<h1>Avalanche along Seward HWY - December 24, 2023</h1>
+
+	<div id='map'></div>
+
+	<section>
+		<h2>Avalanche cuts off the only route from Seward to Anchorage, AK</h2>
+
+		<p>Seward Highway reopened Sunday afternoon after an avalanche forced a closure near its intersection with the Sterling Highway. About 400 feet of highway was covered in roughly 3 feet of snow. </p>
+
+		<p>Stranded drivers were faced with limited options for shelter while the avalanche was being cleared. Some local areas for food and shelter included: the Inn at Tern Lake, Crazy Moose Gifts, Upper Paradise Log Cabin, Alpenglow Cottage, and Trail Lake Lodge.
+		</p>
+
+		<p>Information provided by <a href="https://alaskapublic.org/2023/12/24/avalanches-close-seward-richardson-highways/">AK Public Media</a></p>
+		<p>Map authored by Clarice Perry</p>
+
+	</section>
+
+	<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+    <script src="/data/route.js"></script>
+
+	<script>
+
+        console.log(data);
+
+//options to be used when creating the map
+		var options = {
+			center: [36.08403, -81.83015],
+			zoom: 16
+		}
+
+//creation of the Leaflet map
+		var map = L.map('map', options);
+
+//request to load basemap
+var Esri_WorldTopoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+}).addTo(map);
+
+//string content to be inserted into a tooltip
+		//var message = 'Beacon Heights!';
+
+//create a Leaflet marker, centered on the map's center.
+		//L.marker(map.getCenter())
+			//.bindTooltip(message) //bind the tooltip and message to the marker
+			//.addTo(map) // add the marker to the map`
+			//.openTooltip(); // open the tooltip
+
+	var myRoute = L.geoJson(data, {
+ 		filter : function(feature) {
+ 			if(feature.geometry.type =="LineString") {
+ 				return feature;
+ 			}
+		},
+ 		style: function(feature) {
+ 			return {
+ 				color: "#29C5F6",
+ 				weight: 6,
+ 				opacity: 0.6,
+ 				dashArray: "2, 2"
+ 			}
+ 		}
+ 	}).addTo(map);
+ 	
+	
+
+
+	map.fitBounds(myRoute.getBounds());
+
+
+
+
+//icons
+
+    var avalancheIcon = L.icon({
+    iconUrl: '/images/avalanche.png',
+
+    iconSize:     [80, 95], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76], // point from which the popup should open relative to the iconAnchor
+
+    onEachFeature : function(feature, layer) {
+ 			layer.bindTooltip(feature.properties['name']);
+ 		}
+
+});
+
+L.marker([60.533142, -149.538183], {icon: avalancheIcon}).addTo(map);
+
+
+var innIcon = L.icon({
+    iconUrl: '/images/inn.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.527429, -149.517989], {icon: innIcon}).addTo(map);
+
+
+var storeIcon = L.icon({
+    iconUrl: '/images/store.png',
+
+    iconSize:     [38, 50], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.524491, -149.507847], {icon: storeIcon}).addTo(map);
+
+
+var innIcon = L.icon({
+    iconUrl: '/images/inn.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.520462, -149.493631], {icon: innIcon}).addTo(map);
+
+
+var innIcon = L.icon({
+    iconUrl: '/images/inn.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.503379, -149.374201], {icon: innIcon}).addTo(map);
+
+
+var innIcon = L.icon({
+    iconUrl: '/images/inn.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.488654, -149.370917], {icon: innIcon}).addTo(map);
+
+
+var townIcon = L.icon({
+    iconUrl: '/images/town.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([60.104708, -149.442099], {icon: townIcon}).addTo(map);
+
+
+var townIcon = L.icon({
+    iconUrl: '/images/town.png',
+
+    iconSize:     [50, 63], // size of the icon
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+L.marker([61.217427, -149.899615], {icon: townIcon}).addTo(map);
+
+
+//legend
+
+// 9. Create Leaflet Control Object for Legend
+var legend = L.control({position: 'topright'});
+// 10. Function that runs when legend is added to map
+legend.onAdd = function () {
+// Create Div Element and Populate it with HTML
+var div = L.DomUtil.create('div', 'legend');
+//this line creates a title for the choropleth part of the legend
+
+
+//this line provides the legend title for the airbnb colored symbols
+div.innerHTML += '<hr><b>Types of shelter<b><br />';
+
+//the next 3 lines call the airbnb icon along with its proper color
+//notice the names of the Airbnb property types listed within the <p> tags at the end of the lines
+div.innerHTML +=  (" <img src=/images/avalanche.png height='100' width='100'> <p>Avalanche</p>");
+div.innerHTML +=  (" <img src=/images/inn.png height='100' width='100'><p>Inn</p>");
+div.innerHTML +=  (" <img src=/images/store.png height='100' width='100'><p>Store</p>");
+div.innerHTML +=  (" <img src=/images/town.png height='100' width='100'><p>Town</p>");
+
+return div;
+};
+
+
+// 11. Add a legend to map
+legend.addTo(map);
+
+
+
+
+	</script>
+
+</body>
+
+</html>
